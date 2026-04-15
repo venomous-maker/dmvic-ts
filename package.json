@@ -1,6 +1,6 @@
 {
   "name": "dmvic-ts",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "TypeScript client for the DMVIC (Digital Motor Vehicle Insurance Certificate) API — issue, validate, cancel, and manage motor vehicle insurance certificates in Kenya.",
   "keywords": [
     "dmvic",
@@ -50,7 +50,7 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run clean && npm run build && npm test",
-    "test": "jest --passWithNoTests",
+    "test": "jest --passWithNoTests --forceExit",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "docs": "typedoc",
