@@ -1,0 +1,20 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/index.ts"],
+  "out": "docs",
+  "name": "dmvic-ts",
+  "readme": "README.md",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": true,
+  "categorizeByGroup": true,
+  "searchInComments": true,
+  "navigationLinks": {
+    "GitHub": "https://github.com/venomous-maker/dmvic-ts",
+    "npm": "https://www.npmjs.com/package/dmvic-ts"
+  },
+  "plugin": [],
+  "tsconfig": "tsconfig.json"
+}
+

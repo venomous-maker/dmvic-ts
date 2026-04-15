@@ -1,5 +1,10 @@
 /**
  * DMVIC Utility Functions
+ *
+ * Helper functions for looking up human-readable descriptions of DMVIC codes
+ * and for validating issuance request payloads before they are sent to the API.
+ *
+ * @module utils
  */
 
 import { 
@@ -16,6 +21,12 @@ import {
 } from './types';
 import { DmvicError } from './errors';
 
+/**
+ * Returns a human-readable description for a cancellation reason ID.
+ *
+ * @param reasonID - One of the {@link CANCEL_REASONS} values
+ * @returns Description string, or `"Unknown cancel reason: <id>"` for unrecognised IDs
+ */
 export function getCancelReasonDescription(reasonID: number): string {
   switch (reasonID) {
     case CANCEL_REASONS.INSURED_REQUEST:
@@ -55,6 +66,12 @@ export function getCancelReasonDescription(reasonID: number): string {
   }
 }
 
+/**
+ * Returns a human-readable description for a cover type code.
+ *
+ * @param coverType - One of the {@link COVER_TYPES} values (100, 200, or 300)
+ * @returns Description string, or `"Unknown cover type: <code>"` for unrecognised codes
+ */
 export function getCoverTypeDescription(coverType: number): string {
   switch (coverType) {
     case COVER_TYPES.COMPREHENSIVE:
@@ -68,6 +85,12 @@ export function getCoverTypeDescription(coverType: number): string {
   }
 }
 
+/**
+ * Returns a human-readable description for a certificate type code.
+ *
+ * @param certType - One of the {@link CERTIFICATE_TYPES} values
+ * @returns Description string, or `"Unknown certificate type: <code>"` for unrecognised codes
+ */
 export function getCertificateTypeDescription(certType: number): string {
   switch (certType) {
     case CERTIFICATE_TYPES.CLASS_A_PSV_UNMARKED:
@@ -85,6 +108,12 @@ export function getCertificateTypeDescription(certType: number): string {
   }
 }
 
+/**
+ * Returns a human-readable description for a vehicle type code.
+ *
+ * @param vehicleType - One of the {@link VEHICLE_TYPES} values (1–6)
+ * @returns Description string, or `"Unknown vehicle type: <code>"` for unrecognised codes
+ */
 export function getVehicleTypeDescription(vehicleType: number): string {
   switch (vehicleType) {
     case VEHICLE_TYPES.OWN_GOODS:
@@ -104,7 +133,12 @@ export function getVehicleTypeDescription(vehicleType: number): string {
   }
 }
 
-// Validation functions
+/**
+ * Validates a Type A (PSV / Taxi) issuance request.
+ *
+ * @param req - The issuance request to validate
+ * @throws {@link DmvicError} with `invalidInput` if any required field is missing or invalid
+ */
 export function validateTypeARequest(req: TypeAIssuanceRequest): void {
   if (req.MemberCompanyID <= 0) {
     throw DmvicError.invalidInput("MemberCompanyID is required");
@@ -143,6 +177,12 @@ export function validateTypeARequest(req: TypeAIssuanceRequest): void {
   }
 }
 
+/**
+ * Validates a Type B (commercial vehicle) issuance request.
+ *
+ * @param req - The issuance request to validate
+ * @throws {@link DmvicError} with `invalidInput` if any required field is missing or invalid
+ */
 export function validateTypeBRequest(req: TypeBIssuanceRequest): void {
   if (req.MemberCompanyID <= 0) {
     throw DmvicError.invalidInput("MemberCompanyID is required");
@@ -180,6 +220,12 @@ export function validateTypeBRequest(req: TypeBIssuanceRequest): void {
   }
 }
 
+/**
+ * Validates a Type C (private vehicle) issuance request.
+ *
+ * @param req - The issuance request to validate
+ * @throws {@link DmvicError} with `invalidInput` if any required field is missing or invalid
+ */
 export function validateTypeCRequest(req: TypeCIssuanceRequest): void {
   if (req.MemberCompanyID <= 0) {
     throw DmvicError.invalidInput("MemberCompanyID is required");
@@ -213,6 +259,12 @@ export function validateTypeCRequest(req: TypeCIssuanceRequest): void {
   }
 }
 
+/**
+ * Validates a Type D (motorcycle) issuance request.
+ *
+ * @param req - The issuance request to validate
+ * @throws {@link DmvicError} with `invalidInput` if any required field is missing or invalid
+ */
 export function validateTypeDRequest(req: TypeDIssuanceRequest): void {
   if (req.MemberCompanyID <= 0) {
     throw DmvicError.invalidInput("MemberCompanyID is required");

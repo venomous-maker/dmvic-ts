@@ -1,6 +1,11 @@
 /**
  * DMVIC Client Implementation with X.509 Certificate Support
- * HTTPs Implementation
+ *
+ * Provides {@link DmvicClient}, the main entry-point for interacting with the
+ * Kenya Digital Motor Vehicle Insurance Certificate (DMVIC) API over HTTPS
+ * with optional mutual-TLS authentication.
+ *
+ * @module client
  */
 
 import { readFileSync } from "fs";
@@ -42,31 +47,99 @@ import {
     validateTypeDRequest,
 } from "./utils";
 
+/**
+ * Public contract for the DMVIC client.
+ *
+ * All high-level API operations are defined here so consumers can
+ * program against the interface rather than the concrete class.
+ */
 export interface IDmvicClient {
+    /** Authenticate with the DMVIC API and cache the token. */
     login(): Promise<void>;
+    /**
+     * Retrieve certificate details by certificate number.
+     * @param certificateNumber - The certificate to look up
+     */
     getCertificate(certificateNumber: string): Promise<CertificateResponse>;
+    /**
+     * Cancel an insurance certificate.
+     * @param certificateNumber - The certificate to cancel
+     * @param reasonID - Cancellation reason ID (see {@link CANCEL_REASONS})
+     */
     cancelCertificate(
         certificateNumber: string,
         reasonID: number,
     ): Promise<CancellationResponse>;
+    /**
+     * Validate an existing insurance certificate.
+     * @param req - Validation request payload
+     */
     validateInsurance(
         req: InsuranceValidationRequest,
     ): Promise<InsuranceValidationResponse>;
+    /**
+     * Check for double insurance on a vehicle.
+     * @param req - Double-insurance check payload
+     */
     validateDoubleInsurance(
         req: DoubleInsuranceRequest,
     ): Promise<DoubleInsuranceResponse>;
+    /**
+     * Issue a Type A (PSV / Taxi) certificate.
+     * @param req - Type A issuance request
+     */
     issueTypeACertificate(req: TypeAIssuanceRequest): Promise<InsuranceResponse>;
+    /**
+     * Issue a Type B (commercial vehicle) certificate.
+     * @param req - Type B issuance request
+     */
     issueTypeBCertificate(req: TypeBIssuanceRequest): Promise<InsuranceResponse>;
+    /**
+     * Issue a Type C (private vehicle) certificate.
+     * @param req - Type C issuance request
+     */
     issueTypeCCertificate(req: TypeCIssuanceRequest): Promise<InsuranceResponse>;
+    /**
+     * Issue a Type D (motorcycle) certificate.
+     * @param req - Type D issuance request
+     */
     issueTypeDCertificate(req: TypeDIssuanceRequest): Promise<InsuranceResponse>;
+    /**
+     * Confirm a previously submitted certificate issuance.
+     * @param req - Confirmation request
+     */
     confirmCertificateIssuance(
         req: ConfirmationRequest,
     ): Promise<InsuranceResponse>;
+    /**
+     * Retrieve certificate stock levels for a member company.
+     * @param memberCompanyID - The member company ID
+     */
     getMemberCompanyStock(memberCompanyID: number): Promise<StockResponse>;
+    /** Get the current bearer token string (empty if not authenticated). */
     getToken(): string;
+    /** Check whether the cached token is still valid. */
     isTokenValid(): boolean;
 }
 
+/**
+ * Main DMVIC API client.
+ *
+ * Handles authentication, token caching, request signing, and all
+ * DMVIC V4 API operations. Supports X.509 mutual-TLS when
+ * {@link DmvicConfig.certificates | certificates} are provided.
+ *
+ * @example
+ * ```typescript
+ * const client = new DmvicClient({
+ *   environment: 'production',
+ *   credentials: { username: 'user', password: 'pass' },
+ *   clientId: 'my-client-id',
+ * });
+ * await client.login();
+ * const cert = await client.getCertificate('CERT-001');
+ * ```
+ */
 export class DmvicClient implements IDmvicClient {
     private config: DmvicConfig;
     private tokenCache: TTLCache<string, string>;
@@ -403,6 +476,14 @@ export class DmvicClient implements IDmvicClient {
         return token;
     }
 
+    /**
+     * Authenticate with the DMVIC API.
+     *
+     * On success the bearer token is cached automatically with an appropriate
+     * TTL derived from the `expires` field in the login response.
+     *
+     * @throws {@link DmvicError} with `authenticationError` on failure
+     */
     async login(): Promise<void> {
         try {
             this.debugLog("Perfoming login ....:", this.config.credentials.username);
@@ -463,6 +544,14 @@ export class DmvicClient implements IDmvicClient {
         }
     }
 
+    /**
+     * Retrieve details for an insurance certificate.
+     *
+     * @param certificateNumber - The certificate number to look up (must not be empty)
+     * @returns The certificate details from the DMVIC API
+     * @throws {@link DmvicError} with `invalidInput` if the certificate number is empty
+     * @throws {@link DmvicError} with `apiError` if the API returns an error
+     */
     async getCertificate(
         certificateNumber: string,
     ): Promise<CertificateResponse> {
@@ -496,6 +585,15 @@ export class DmvicClient implements IDmvicClient {
         return response;
     }
 
+    /**
+     * Cancel an insurance certificate.
+     *
+     * @param certificateNumber - The certificate to cancel (must not be empty)
+     * @param reasonID - Cancellation reason ID — see {@link CANCEL_REASONS}
+     * @returns The cancellation result with a transaction reference
+     * @throws {@link DmvicError} with `invalidInput` for bad inputs
+     * @throws {@link DmvicError} with `apiError` if the API returns an error
+     */
     async cancelCertificate(
         certificateNumber: string,
         reasonID: number,
@@ -535,6 +633,14 @@ export class DmvicClient implements IDmvicClient {
         return response;
     }
 
+    /**
+     * Validate an existing insurance certificate.
+     *
+     * @param req - Validation request containing vehicle registration, chassis, and certificate numbers
+     * @returns Validation result with insurance details
+     * @throws {@link DmvicError} with `invalidInput` if the vehicle registration number is empty
+     * @throws {@link DmvicError} with `apiError` if the API returns an error
+     */
     async validateInsurance(
         req: InsuranceValidationRequest,
     ): Promise<InsuranceValidationResponse> {
@@ -567,6 +673,14 @@ export class DmvicClient implements IDmvicClient {
         return response;
     }
 
+    /**
+     * Check for double insurance on a vehicle.
+     *
+     * @param req - Request containing policy dates, registration, and chassis number
+     * @returns Double-insurance check results
+     * @throws {@link DmvicError} with `invalidInput` if the vehicle registration number is empty
+     * @throws {@link DmvicError} with `apiError` if the API returns an error
+     */
     async validateDoubleInsurance(
         req: DoubleInsuranceRequest,
     ): Promise<DoubleInsuranceResponse> {
@@ -599,6 +713,16 @@ export class DmvicClient implements IDmvicClient {
         return response;
     }
 
+    /**
+     * Issue a **Type A** (PSV / Taxi) insurance certificate.
+     *
+     * The request is validated locally before being sent to the API.
+     *
+     * @param req - Type A issuance request
+     * @returns Issuance result with the new certificate number
+     * @throws {@link DmvicError} with `invalidInput` if validation fails
+     * @throws {@link DmvicError} with `apiError` if the API returns an error
+     */
     async issueTypeACertificate(
         req: TypeAIssuanceRequest,
     ): Promise<InsuranceResponse> {
@@ -629,6 +753,16 @@ export class DmvicClient implements IDmvicClient {
         return response;
     }
 
+    /**
+     * Issue a **Type B** (commercial vehicle) insurance certificate.
+     *
+     * The request is validated locally before being sent to the API.
+     *
+     * @param req - Type B issuance request
+     * @returns Issuance result with the new certificate number
+     * @throws {@link DmvicError} with `invalidInput` if validation fails
+     * @throws {@link DmvicError} with `apiError` if the API returns an error
+     */
     async issueTypeBCertificate(
         req: TypeBIssuanceRequest,
     ): Promise<InsuranceResponse> {
@@ -659,6 +793,16 @@ export class DmvicClient implements IDmvicClient {
         return response;
     }
 
+    /**
+     * Issue a **Type C** (private vehicle) insurance certificate.
+     *
+     * The request is validated locally before being sent to the API.
+     *
+     * @param req - Type C issuance request
+     * @returns Issuance result with the new certificate number
+     * @throws {@link DmvicError} with `invalidInput` if validation fails
+     * @throws {@link DmvicError} with `apiError` if the API returns an error
+     */
     async issueTypeCCertificate(
         req: TypeCIssuanceRequest,
     ): Promise<InsuranceResponse> {
@@ -689,6 +833,16 @@ export class DmvicClient implements IDmvicClient {
         return response;
     }
 
+    /**
+     * Issue a **Type D** (motorcycle) insurance certificate.
+     *
+     * The request is validated locally before being sent to the API.
+     *
+     * @param req - Type D issuance request
+     * @returns Issuance result with the new certificate number
+     * @throws {@link DmvicError} with `invalidInput` if validation fails
+     * @throws {@link DmvicError} with `apiError` if the API returns an error
+     */
     async issueTypeDCertificate(
         req: TypeDIssuanceRequest,
     ): Promise<InsuranceResponse> {
@@ -719,6 +873,14 @@ export class DmvicClient implements IDmvicClient {
         return response;
     }
 
+    /**
+     * Confirm a previously submitted certificate issuance request.
+     *
+     * @param req - Confirmation request with approval details
+     * @returns Confirmation result
+     * @throws {@link DmvicError} with `invalidInput` if required fields are missing
+     * @throws {@link DmvicError} with `apiError` if the API returns an error
+     */
     async confirmCertificateIssuance(
         req: ConfirmationRequest,
     ): Promise<InsuranceResponse> {
@@ -758,6 +920,14 @@ export class DmvicClient implements IDmvicClient {
         return response;
     }
 
+    /**
+     * Retrieve certificate stock levels for a member insurance company.
+     *
+     * @param memberCompanyID - The member company ID (must be a positive integer)
+     * @returns Stock details per certificate classification
+     * @throws {@link DmvicError} with `invalidInput` if the ID is invalid
+     * @throws {@link DmvicError} with `apiError` if the API returns an error
+     */
     async getMemberCompanyStock(memberCompanyID: number): Promise<StockResponse> {
         if (!Number.isInteger(memberCompanyID) || memberCompanyID < 1) {
             throw DmvicError.invalidInput(

@@ -1,23 +1,60 @@
-
+/**
+ * Token caching implementations for the DMVIC client.
+ *
+ * Provides an in-memory {@link TTLCache} (used by default) and an
+ * experimental {@link FileSystemCache} for persistent storage.
+ *
+ * @module cache
+ */
 
 import * as fs from 'node:fs';
 import * as path from 'path';
-/**
- * TTL Cache Implementation
- */
 
+/**
+ * Internal cache entry wrapping a value with its expiration timestamp.
+ * @internal
+ */
 interface CacheItem<V> {
+  /** The cached value */
   value: V;
+  /** Unix-epoch millisecond timestamp when this entry expires */
   expiry: number;
 }
 
+/**
+ * Contract for any token-storage backend.
+ *
+ * Both {@link TTLCache} and {@link FileSystemCache} implement this interface,
+ * making it easy to swap storage strategies.
+ */
 export interface TokenStorage {
+  /** Store a token with the given TTL (milliseconds). */
   set(key: string, value: string, ttl: number): void;
+  /** Retrieve a token, or `null` if missing / expired. */
   get(key: string): string | null;
+  /** Remove a token by key. */
   remove(key: string): void;
+  /** Get and remove a token in a single operation. */
   pop(key: string): string | null;
 }
 
+/**
+ * Generic in-memory cache with per-entry time-to-live (TTL).
+ *
+ * Used internally by {@link DmvicClient} to cache authentication tokens.
+ * A background cleanup timer automatically evicts expired entries.
+ *
+ * @typeParam K - Key type
+ * @typeParam V - Value type
+ *
+ * @example
+ * ```typescript
+ * const cache = new TTLCache<string, string>(60_000); // 1-minute default TTL
+ * cache.set('token', 'abc123');
+ * cache.get('token'); // 'abc123'
+ * cache.destroy();    // stop the cleanup timer
+ * ```
+ */
 export class TTLCache<K, V> implements TokenStorage {
   private items: Map<K, CacheItem<V>>;
   private cleanupInterval: NodeJS.Timeout;
@@ -124,7 +161,14 @@ export class TTLCache<K, V> implements TokenStorage {
 }
 
 
-/// implimentation using filesystem
+/**
+ * Experimental filesystem-backed token cache.
+ *
+ * Persists cache entries to a JSON file so tokens survive process restarts.
+ *
+ * @remarks This implementation is **incomplete** — `get`, `remove`, and `pop`
+ * currently throw `"Method not implemented"`. Contributions welcome!
+ */
 export class FileSystemCache implements TokenStorage {
   
    private fileHandle:number | null = null;

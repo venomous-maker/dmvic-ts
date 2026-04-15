@@ -1,15 +1,33 @@
 /**
- * DMVIC Constants - 
+ * DMVIC Constants
+ *
+ * All constant values used throughout the DMVIC client: cover types,
+ * cancel reasons, certificate types, vehicle types, error codes,
+ * API endpoint paths, and default configuration values.
+ *
+ * @module constants
  */
 
-// Cover Types
+/**
+ * Insurance cover type numeric codes.
+ *
+ * | Code | Type |
+ * |------|------|
+ * | 100  | Comprehensive (COMP) |
+ * | 200  | Third-Party Only (TPO) |
+ * | 300  | Third-Party, Fire & Theft (TPTF) |
+ */
 export const COVER_TYPES = {
   COMPREHENSIVE: 100, // COMP
   THIRD_PARTY: 200,   // TPO
   TPTF: 300,         // Third-party, Theft & Fire
 } as const;
 
-// Cancel Reasons
+/**
+ * Valid cancellation reason IDs accepted by the Cancel Certificate endpoint.
+ *
+ * Use {@link getCancelReasonDescription} to obtain human-readable descriptions.
+ */
 export const CANCEL_REASONS = {
   INSURED_REQUEST: 8,
   AMEND_PASSENGERS: 12,
@@ -29,7 +47,12 @@ export const CANCEL_REASONS = {
   VEHICLE_STOLEN: 30,
 } as const;
 
-// Certificate Types
+/**
+ * Certificate type IDs used in Type A and Type D issuance requests.
+ *
+ * - `1`, `8` — valid for Type A (PSV / Taxi)
+ * - `4`, `9`, `10` — valid for Type D (Motorcycle)
+ */
 export const CERTIFICATE_TYPES = {
   CLASS_A_PSV_UNMARKED: 1,
   TYPE_A_TAXI: 8,
@@ -38,7 +61,11 @@ export const CERTIFICATE_TYPES = {
   TYPE_D_MOTORCYCLE_COMM: 10,
 } as const;
 
-// Vehicle Types (Type B)
+/**
+ * Vehicle type IDs used in Type B (commercial vehicle) issuance requests.
+ *
+ * Values 1–6 map to DMVIC commercial vehicle classifications.
+ */
 export const VEHICLE_TYPES = {
   OWN_GOODS: 1,
   GENERAL_CARTAGE: 2,
@@ -48,7 +75,12 @@ export const VEHICLE_TYPES = {
   MOTOR_TRADE: 6,
 } as const;
 
-// DMVIC API Error Codes 
+/**
+ * Standardised DMVIC API error codes parsed from error messages.
+ *
+ * These codes are returned by {@link DmvicClient} when the API responds
+ * with a known error string.
+ */
 export const DMVIC_ERROR_CODES = {
   INVALID_JSON: 'ER001',
   UNKNOWN_ERROR: 'ER002',
@@ -59,7 +91,16 @@ export const DMVIC_ERROR_CODES = {
   DATA_VALIDATION: 'ER007',
 } as const;
 
-// Client Error Codes 
+/**
+ * Numeric error codes used internally by the client to classify errors.
+ *
+ * | Range       | Category               |
+ * |-------------|------------------------|
+ * | 1000–1099   | Configuration errors   |
+ * | 2000–2099   | Authentication errors  |
+ * | 3000–8999   | API operation errors   |
+ * | 9000–9099   | Transport / parsing    |
+ */
 export const ERROR_CODES = {
   // Configuration errors (1000-1099)
   INVALID_CONFIG: 1001,
@@ -99,7 +140,11 @@ export const ERROR_CODES = {
     UNKNOWN_ERROR: 9008,
 } as const;
 
-// API Endpoints 
+/**
+ * DMVIC API endpoint paths (relative to the base URL).
+ *
+ * Login uses V1; all other operations use V4.
+ */
 export const API_ENDPOINTS = {
   LOGIN: '/V1/Account/Login',
   GET_CERTIFICATE: '/V4/Integration/GetCertificate',
@@ -114,12 +159,18 @@ export const API_ENDPOINTS = {
   MEMBER_COMPANY_STOCK: '/V4/IntermediaryIntegration/MemberCompanyStock',
 } as const;
 
-// Default endpoints
+/**
+ * Base URLs for each DMVIC API environment.
+ */
 export const ENDPOINTS = {
+  /** Production API base URL */
   production: 'https://api.dmvic.com/api',
+  /** UAT (User Acceptance Testing) API base URL */
   uat: 'https://uat-api.dmvic.com/api',
 } as const;
 
-// Default timeout values (in milliseconds)
+/** Default HTTP request timeout in milliseconds (30 seconds). */
 export const DEFAULT_TIMEOUT = 30000;
-export const DEFAULT_TOKEN_TTL = 86400000; // 24 hours 
+
+/** Default token time-to-live in milliseconds (24 hours). */
+export const DEFAULT_TOKEN_TTL = 86400000;

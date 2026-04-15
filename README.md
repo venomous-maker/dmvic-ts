@@ -296,7 +296,20 @@ npm run build
 
 # Clean build output
 npm run clean
+
+# Generate API documentation (outputs to ./docs)
+npm run docs
 ```
+
+## API Documentation
+
+Full API documentation is generated with [TypeDoc](https://typedoc.org/) and can be found in the `docs/` directory after running:
+
+```bash
+npm run docs
+```
+
+Open `docs/index.html` in your browser to browse the complete API reference with all types, interfaces, classes, and functions.
 
 ## License
 
