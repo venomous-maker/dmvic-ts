@@ -1,0 +1,64 @@
+{
+  "name": "dmvic-ts",
+  "version": "1.0.0",
+  "description": "TypeScript client for the DMVIC (Digital Motor Vehicle Insurance Certificate) API — issue, validate, cancel, and manage motor vehicle insurance certificates in Kenya.",
+  "keywords": [
+    "dmvic",
+    "motor-vehicle",
+    "insurance",
+    "certificate",
+    "kenya",
+    "ira",
+    "comprehensive",
+    "third-party",
+    "tpo",
+    "tptf",
+    "x509",
+    "api-client",
+    "typescript"
+  ],
+  "homepage": "https://github.com/venomous-maker/dmvic-ts#readme",
+  "bugs": {
+    "url": "https://github.com/venomous-maker/dmvic-ts/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/venomous-maker/dmvic-ts.git"
+  },
+  "license": "ISC",
+  "author": "Morgan Okumu",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build && npm test",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.15.3",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.3.2",
+    "typescript": "^5.8.3"
+  }
+}
