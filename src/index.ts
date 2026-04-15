@@ -1,80 +1,31 @@
 /**
- * DMVIC TypeScript Client — Main Export
+ * DMVIC TypeScript Client - Main Export
  */
 
 // Main client
-export { DmvicClient } from "./client";
-export type { IDmvicClient } from "./client";
+export { DmvicClient } from './client';
+export type { IDmvicClient } from './client';
 
 // Types
-export type {
-  CertificateConfig,
-  DmvicConfig,
-  DmvicCredentials,
-  Environment,
-  LoginResponse,
-  CertificateResponse,
-  CancellationResponse,
-  InsuranceValidationRequest,
-  InsuranceValidationResponse,
-  DoubleInsuranceRequest,
-  DoubleInsuranceResponse,
-  TypeAIssuanceRequest,
-  TypeBIssuanceRequest,
-  TypeCIssuanceRequest,
-  TypeDIssuanceRequest,
-  InsuranceResponse,
-  ConfirmationRequest,
-  StockResponse,
-  DmvicApiError,
-  FlexibleDmvicError,
-} from "./types";
-
-export {
-  ETypeOfCover,
-  ETypeOfCertificate,
-  ClassType,
-  VehicleType,
-  CertificateType,
-} from "./types";
+export * from './types';
 
 // Constants
-export {
-  COVER_TYPES,
-  CANCEL_REASONS,
-  CERTIFICATE_TYPES,
-  VEHICLE_TYPES,
-  DMVIC_ERROR_CODES,
-  ERROR_CODES,
-  API_ENDPOINTS,
-  ENDPOINTS,
-  DEFAULT_TIMEOUT,
-  DEFAULT_TOKEN_TTL,
-} from "./constants";
+export * from './constants';
 
 // Utilities
-export {
-  getCancelReasonDescription,
-  getCoverTypeDescription,
-  getCertificateTypeDescription,
-  getVehicleTypeDescription,
-  validateTypeARequest,
-  validateTypeBRequest,
-  validateTypeCRequest,
-  validateTypeDRequest,
-} from "./utils";
+export * from './utils';
 
 // Errors
-export { DmvicError } from "./errors";
-export type { ErrorType } from "./errors";
+export { DmvicError } from './errors';
+export type { ErrorType } from './errors';
 
 // Cache (for advanced usage)
-export { TTLCache } from "./cache";
-export type { TokenStorage } from "./cache";
+export { TTLCache } from './cache';
+export type { TokenStorage } from './cache';
 
-// Factory function
-import { DmvicClient } from "./client";
-import type { DmvicConfig } from "./types";
+// Factory function for creating a client
+import { DmvicClient } from './client';
+import { DmvicConfig } from './types';
 
 /**
  * Creates a new DMVIC client instance
@@ -85,4 +36,7 @@ export function createDmvicClient(config: DmvicConfig): DmvicClient {
   return new DmvicClient(config);
 }
 
+/**
+ * Default export for convenience
+ */
 export default DmvicClient;

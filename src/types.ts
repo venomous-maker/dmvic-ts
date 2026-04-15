@@ -33,12 +33,12 @@ export interface CertificateRequest {
   CertificateNumber: string; //  case
 }
 
-export interface DmvicApiError {
+export interface DmvicError {
   errorCode: string;
   errorText: string;
 }
 
-export type FlexibleDmvicError = DmvicApiError[];
+export type FlexibleDmvicError = DmvicError[];
 
 export interface CallbackURL {
   URL: string;

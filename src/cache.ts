@@ -1,3 +1,7 @@
+
+
+import * as fs from 'node:fs';
+import * as path from 'path';
 /**
  * TTL Cache Implementation
  */
@@ -16,7 +20,7 @@ export interface TokenStorage {
 
 export class TTLCache<K, V> implements TokenStorage {
   private items: Map<K, CacheItem<V>>;
-  private cleanupInterval: ReturnType<typeof setInterval>;
+  private cleanupInterval: NodeJS.Timeout;
   private defaultTTL: number;
 
   constructor(defaultTTL: number) {
@@ -26,12 +30,7 @@ export class TTLCache<K, V> implements TokenStorage {
     // Start cleanup interval
     this.cleanupInterval = setInterval(() => {
       this.cleanup();
-    }, Math.max(defaultTTL / 10, 1000));
-
-    // Allow the process to exit even if the interval is active
-    if (this.cleanupInterval.unref) {
-      this.cleanupInterval.unref();
-    }
+    }, Math.max(defaultTTL / 10, 1000)); // Cleanup every 10% of TTL or 1 second minimum
   }
 
   private cleanup(): void {
@@ -87,9 +86,9 @@ export class TTLCache<K, V> implements TokenStorage {
   pop(key: K): V | null;
   pop(key: string): string | null;
   pop(key: K | string): V | string | null {
-    const value = this.get(key as K);
+    const value = this.get(key as any);
     if (value !== null) {
-      this.remove(key as K);
+      this.remove(key as any);
     }
     return value;
   }
@@ -122,4 +121,71 @@ export class TTLCache<K, V> implements TokenStorage {
     clearInterval(this.cleanupInterval);
     this.clear();
   }
+}
+
+
+/// implimentation using filesystem
+export class FileSystemCache implements TokenStorage {
+  
+   private fileHandle:number | null = null;
+  constructor(private defaultTTL: number = 3600, private filePath: string = "./cache.json") {
+    // Implement filesystem-based cache initialization here
+      this.init();
+  }
+
+  private async init() {
+   try {
+    const exists =await this.fileExists(this.filePath);
+    if(!exists){
+        fs.writeFileSync(this.filePath, JSON.stringify({}));
+    }
+    this.fileHandle = fs.openSync(path.resolve(this.filePath), 'a+');    
+    
+   } catch (error) {
+      console.error('Error initializing cache:', error);
+   }
+  }
+
+  private  fileExists(_filePath: string): boolean {
+    try {
+       //  fs.access(filePath,);
+      return true; // File exists
+    } catch {
+      return false; // File does not exist or is inaccessible
+    }
+  }
+
+  private  readFile<T>():T {
+    try {
+      const data = fs.readFileSync(this.filePath, 'utf8');
+      return JSON.parse(data) as T;
+    } catch (error) {
+      console.error('Error reading cache file:', error);
+      return {} as T;
+    }
+  }
+  set(key: string, value: string, ttl?: number): void {
+    if(this.fileHandle){
+        
+
+
+      ttl = ttl ?? this.defaultTTL;
+      const item = { [key]: { value, expiry: Date.now() + ttl } };
+     // this.fileHandle.write(JSON.stringify(item));
+    }
+  }
+
+  get(key: string): string | null {
+    throw new Error("Method not implemented.");
+  }
+  remove(key: string): void {
+    throw new Error("Method not implemented.");
+  }
+  pop(key: string): string | null {
+    throw new Error("Method not implemented.");
+  }
+
+
+
+
 }
