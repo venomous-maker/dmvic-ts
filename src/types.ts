@@ -222,7 +222,7 @@ export interface DoubleInsuranceResponse {
   /** Serialized input string */
   Inputs: string;
   /** Callback object containing double-insurance results (uppercase to match Go) */
-  CallbackObj: DoubleInsuranceCallbackObj;
+  callbackObj: DoubleInsuranceCallbackObj;
   /** Array of errors, present when `success` is `false` */
   error?: FlexibleDmvicError;
   /** Whether the API call was successful */
@@ -484,6 +484,7 @@ export interface InsuranceResponse {
   /** Unique API request tracking number */
   apiRequestNumber: string;
   /** Callback object with issuance details (uppercase `CallbackObj` — matches Go JSON struct) */
+  callbackObj: IssuanceCallbackObj;
   CallbackObj: IssuanceCallbackObj;
 }
 
