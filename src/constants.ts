@@ -120,6 +120,7 @@ export const ERROR_CODES = {
 
   // API operation errors (3000-8999)
   GET_CERTIFICATE: 3000,
+  VEHICLE_SEARCH: 3100,
   VALIDATE_INSURANCE: 4000,
   CANCEL_CERTIFICATE: 5000,
   MEMBER_COMPANY_STOCK: 6000,
@@ -157,6 +158,8 @@ export const API_ENDPOINTS = {
   ISSUANCE_TYPE_D: '/V4/IntermediaryIntegration/IssuanceTypeDCertificate',
   CONFIRM_CERTIFICATE_ISSUANCE: '/V4/IntermediaryIntegration/ConfirmCertificateIssuance',
   MEMBER_COMPANY_STOCK: '/V4/IntermediaryIntegration/MemberCompanyStock',
+  /** Vehicle Search (Member Company) - V6 */
+  VEHICLE_SEARCH: '/V6/Integration/VehicleSearch',
 } as const;
 
 /**
