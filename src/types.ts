@@ -544,6 +544,69 @@ export interface StockResponse {
 }
 
 /**
+ * Request payload for Vehicle Search (Member Company) - V6
+ *
+ * Example body: { "VehicleRegistrationNumber": "KDC324F" }
+ */
+export interface VehicleSearchRequest {
+  /** The vehicle registration number to search for (max length 15) */
+  VehicleRegistrationNumber: string;
+}
+
+/**
+ * Vehicle details returned by the Vehicle Search endpoint.
+ */
+export interface VehicleInfo {
+  RegistrationNumber: string | null;
+  ChassisNumber: string | null;
+  RegistrationYear: string | null;
+  EngineNumber: string | null;
+  Make: string | null;
+  Model: string | null;
+  BodyType: string | null;
+}
+
+/**
+ * Single policy history entry returned in Vehicle Search responses.
+ */
+export interface PolicyHistoryItem {
+  PolicyNumber: string | null;
+  TypeOfCover: string | null;
+  CoverStartDate: string | null;
+  CoverEndDate: string | null;
+  MemberCompany: string | null;
+}
+
+/**
+ * Callback object returned by the Vehicle Search endpoint.
+ */
+export interface VehicleSearchCallbackObj {
+  Vehicle: VehicleInfo;
+  PolicyHistory: PolicyHistoryItem[];
+}
+
+/**
+ * Response from the Vehicle Search endpoint (`/V6/Integration/VehicleSearch`).
+ */
+export interface VehicleSearchResponse {
+  /** When present, echoes the original inputs */
+  Inputs?: VehicleSearchRequest;
+  /** Callback object containing vehicle and policy history information */
+  callbackObj?: VehicleSearchCallbackObj;
+  /** Whether the API call was successful */
+  success: boolean;
+  /** Array of errors, present when `success` is `false` */
+  Error?: FlexibleDmvicError;
+  /** Unique API request tracking number */
+  APIRequestNumber?: string;
+  /** Optional DMVIC reference number */
+  DMVICRefNo?: string | null;
+  /** Backwards-compatible top-level vehicle fields (some responses include these) */
+  Vehicle?: VehicleInfo;
+  PolicyHistory?: PolicyHistoryItem[];
+}
+
+/**
  * Target environment for the DMVIC client.
  *
  * - `"production"` — Live DMVIC API
