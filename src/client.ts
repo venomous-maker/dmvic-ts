@@ -20,6 +20,8 @@ import {
     CancellationResponse,
     InsuranceValidationRequest,
     InsuranceValidationResponse,
+    VehicleSearchRequest,
+    VehicleSearchResponse,
     DoubleInsuranceRequest,
     DoubleInsuranceResponse,
     TypeAIssuanceRequest,
@@ -116,6 +118,11 @@ export interface IDmvicClient {
      * @param memberCompanyID - The member company ID
      */
     getMemberCompanyStock(memberCompanyID: number): Promise<StockResponse>;
+    /**
+     * Search for a vehicle by registration number (Member Company Vehicle Search V6).
+     * @param req - VehicleSearchRequest containing VehicleRegistrationNumber
+     */
+    searchVehicle(req: VehicleSearchRequest): Promise<VehicleSearchResponse>;
     /** Get the current bearer token string (empty if not authenticated). */
     getToken(): string;
     /** Check whether the cached token is still valid. */
@@ -584,6 +591,47 @@ export class DmvicClient implements IDmvicClient {
 
         return response;
     }
+
+          /**
+           * Search for a vehicle by registration number (Member Company Vehicle Search V6).
+           *
+           * @param req - Request containing VehicleRegistrationNumber (max length 15)
+           * @returns Vehicle search result with vehicle details and policy history
+           */
+          async searchVehicle(req: VehicleSearchRequest): Promise<VehicleSearchResponse> {
+            if (!req || !req.VehicleRegistrationNumber || !req.VehicleRegistrationNumber.trim()) {
+              throw DmvicError.invalidInput("VehicleRegistrationNumber is required");
+            }
+
+            if (req.VehicleRegistrationNumber.length > 15) {
+              throw DmvicError.invalidInput("VehicleRegistrationNumber maximum length is 15");
+            }
+
+            const response = await this.makeRequest<VehicleSearchResponse>(
+              API_ENDPOINTS.VEHICLE_SEARCH,
+              {
+                method: "POST",
+                body: req,
+                requiresAuth: true,
+              },
+            );
+
+            // DMVIC sometimes returns Error (uppercase) or error (lowercase). Handle both.
+            const apiErrors = (response as any).error || (response as any).Error;
+            if (!response.success && apiErrors && Array.isArray(apiErrors) && apiErrors.length > 0) {
+              const dmvicCode = this.parseDmvicError(apiErrors[0]?.errorText || "");
+              throw DmvicError.apiError(
+                apiErrors[0]?.errorText || "Vehicle search failed",
+                ERROR_CODES.VEHICLE_SEARCH,
+                {
+                  dmvicErrorCode: apiErrors[0]?.errorCode || dmvicCode,
+                  originalError: apiErrors[0],
+                },
+              );
+            }
+
+            return response;
+          }
 
     /**
      * Cancel an insurance certificate.
