@@ -1,6 +1,6 @@
 {
   "name": "dmvic-ts",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "TypeScript client for the DMVIC (Digital Motor Vehicle Insurance Certificate) API — issue, validate, cancel, and manage motor vehicle insurance certificates in Kenya.",
   "keywords": [
     "dmvic",
