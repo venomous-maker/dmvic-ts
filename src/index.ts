@@ -28,8 +28,8 @@ export { DmvicError } from './errors';
 export type { ErrorType } from './errors';
 
 // Cache (for advanced usage)
-export { TTLCache, FileSystemCache } from './cache';
-export type { TokenStorage } from './cache';
+export { TTLCache, FileTTLCache } from './cache';
+export type { TokenStorage, FileTTLCacheConfig } from './cache';
 
 // Factory function for creating a client
 import { DmvicClient } from './client';
