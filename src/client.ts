@@ -41,7 +41,7 @@ import {
     ERROR_CODES,
 } from "./constants";
 import { DmvicError } from "./errors";
-import { TTLCache } from "./cache";
+import {FileTTLCache, TokenStorage, TTLCache} from "./cache";
 import {
     validateTypeARequest,
     validateTypeBRequest,
@@ -149,7 +149,7 @@ export interface IDmvicClient {
  */
 export class DmvicClient implements IDmvicClient {
     private config: DmvicConfig;
-    private tokenCache: TTLCache<string, string>;
+    private tokenCache: TokenStorage;
     private baseURL: string;
     private httpsAgent?: HttpsAgent;
 
@@ -161,7 +161,16 @@ export class DmvicClient implements IDmvicClient {
 
         // Prefer an explicit baseURL in config (tests set this). Fallback to environment endpoints.
         this.baseURL = config.baseURL ?? (config.environment == "production" ? ENDPOINTS.production : ENDPOINTS.uat);
-        this.tokenCache = new TTLCache<string, string>(DEFAULT_TOKEN_TTL);
+        if(!this.config.tokenStorage ||this.config.tokenStorage === 'FILE'){
+            this.tokenCache = new FileTTLCache({
+                username: config.credentials.username,
+                password: config.credentials.password,
+                clientId: config.clientId,
+                defaultTTL: config.tokenTTL ?? DEFAULT_TOKEN_TTL,
+            });
+        }else{
+            this.tokenCache = new TTLCache<string, string>(DEFAULT_TOKEN_TTL);
+        }
 
         // Setup X.509 certificate support if certificates are provided
         if (config.certificates) {
