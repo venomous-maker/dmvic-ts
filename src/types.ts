@@ -660,4 +660,6 @@ export interface DmvicConfig {
   debug?: boolean;
   /** X.509 mutual-TLS certificate configuration */
   certificates?: CertificateConfig;
+  /** Token storage configuration */
+  tokenStorage?: 'FILE' | 'MEMORY';
 }
