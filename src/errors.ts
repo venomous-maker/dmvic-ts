@@ -18,6 +18,15 @@ import { ERROR_CODES } from './constants';
 export type ErrorType = 'InternalError' | 'ExternalError';
 
 /**
+ * Optional additional context (e.g. the original API error object)
+ */
+export interface ErrorDetails<T = unknown> {
+  response?: T;
+  [key: string]: unknown;
+}
+
+
+/**
  * Custom error class for all DMVIC client errors.
  *
  * Every error carries a {@link type}, numeric {@link code}, human-readable
@@ -32,13 +41,13 @@ export type ErrorType = 'InternalError' | 'ExternalError';
  * throw DmvicError.apiError('Certificate not found', 3000);
  * ```
  */
-export class DmvicError extends Error {
+export class DmvicError<T = unknown> extends Error {
   /** Whether this is an internal or external error */
   public readonly type: ErrorType;
   /** Numeric error code — see {@link ERROR_CODES} */
   public readonly code: number;
   /** Optional additional context (e.g. the original API error object) */
-  public readonly details?: any;
+  public readonly details?: ErrorDetails<T>;
 
   /**
    * @param type - Error origin discriminator
@@ -46,7 +55,7 @@ export class DmvicError extends Error {
    * @param message - Human-readable error message
    * @param details - Optional additional context
    */
-  constructor(type: ErrorType, code: number, message: string, details?: any) {
+  constructor(type: ErrorType, code: number, message: string, details?: ErrorDetails<T>) {
     super(message);
     this.name = 'DmvicError';
     this.type = type;
@@ -60,7 +69,7 @@ export class DmvicError extends Error {
    * @param message - Error description
    * @param details - Optional context
    */
-  static internal(code: number, message: string, details?: any): DmvicError {
+  static internal<T = unknown>(code: number, message: string, details?: ErrorDetails<T>): DmvicError<T> {
     return new DmvicError('InternalError', code, message, details);
   }
 
@@ -70,12 +79,12 @@ export class DmvicError extends Error {
    * @param message - Error description
    * @param details - Optional context
    */
-  static external(code: number, message: string, details?: any): DmvicError {
+  static external<T =unknown>(code: number, message: string, details?: ErrorDetails<T>): DmvicError<T> {
     return new DmvicError('ExternalError', code, message, details);
   }
 
   /** Invalid client configuration error. */
-  static invalidConfig(message: string = 'Invalid client configuration'): DmvicError {
+  static invalidConfig(message: string = 'Invalid client configuration'): DmvicError{
     return DmvicError.internal(ERROR_CODES.INVALID_CONFIG, message);
   }
 
@@ -110,13 +119,13 @@ export class DmvicError extends Error {
    * @param statusCode - HTTP status code or API operation error code
    * @param details - Original error payload from the API
    */
-  static apiError(message: string, statusCode?: number, details?: any): DmvicError {
+  static apiError<T = unknown>(message: string, statusCode?: number, details?: ErrorDetails<T>): DmvicError<T> {
     return DmvicError.external(statusCode || ERROR_CODES.HTTP_REQUEST, message, details);
   }
 
   /** Authentication / login failure. */
-  static authenticationError(message: string = 'Authentication failed'): DmvicError {
-    return DmvicError.external(401, message);
+  static authenticationError<T = unknown>(message: string = 'Authentication failed', details?: ErrorDetails<T>): DmvicError<T> {
+    return DmvicError.external(401, message, details);
   }
 
   /** Invalid input provided to a client method. */

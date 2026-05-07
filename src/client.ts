@@ -486,7 +486,7 @@ export class DmvicClient implements IDmvicClient {
         await this.login();
         const token = this.tokenCache.get("dmvictoken");
         if (!token) {
-            throw DmvicError.authenticationError("Failed to obtain valid token");
+            throw DmvicError.authenticationError<LoginResponse>("Failed to obtain valid token", { response: undefined });
         }
 
         return token;
@@ -516,7 +516,7 @@ export class DmvicClient implements IDmvicClient {
             );
 
             if (!response.token) {
-                throw DmvicError.authenticationError("No token in login response");
+                throw DmvicError.authenticationError<LoginResponse>("No token in login response", { response });
             }
 
             // Calculate token expiry duration
@@ -535,7 +535,7 @@ export class DmvicClient implements IDmvicClient {
                 const data = errObj.response.data as any;
                 if (data.error && data.error.length > 0) {
                     const errorText = data.error[0].errorText || "Login failed";
-                    throw DmvicError.authenticationError(errorText);
+                    throw DmvicError.authenticationError<LoginResponse>(errorText, { response: data});
                 }
             }
 
@@ -588,12 +588,13 @@ export class DmvicClient implements IDmvicClient {
         // Handle DMVIC API errors
         if (!response.success && response.error && response.error.length > 0) {
             const dmvicCode = this.parseDmvicError(response?.error[0]?.errorText || "");
-            throw DmvicError.apiError(
+            throw DmvicError.apiError<CertificateResponse>(
                 response?.error[0]?.errorText || "Certificate retrieval failed",
                 ERROR_CODES.GET_CERTIFICATE,
                 {
                     dmvicErrorCode: response?.error[0]?.errorCode || dmvicCode,
                     originalError: response.error[0],
+                    response: response,
                 },
             );
         }
@@ -629,12 +630,13 @@ export class DmvicClient implements IDmvicClient {
             const apiErrors = (response as any).error || (response as any).Error;
             if (!response.success && apiErrors && Array.isArray(apiErrors) && apiErrors.length > 0) {
               const dmvicCode = this.parseDmvicError(apiErrors[0]?.errorText || "");
-              throw DmvicError.apiError(
+              throw DmvicError.apiError<VehicleSearchResponse>(
                 apiErrors[0]?.errorText || "Vehicle search failed",
                 ERROR_CODES.VEHICLE_SEARCH,
                 {
                   dmvicErrorCode: apiErrors[0]?.errorCode || dmvicCode,
                   originalError: apiErrors[0],
+                    response: response,
                 },
               );
             }
@@ -677,12 +679,13 @@ export class DmvicClient implements IDmvicClient {
         // Handle DMVIC API errors
         if (!response.success && response.error && response.error.length > 0) {
             const dmvicCode = this.parseDmvicError(response?.error[0]?.errorText || "");
-            throw DmvicError.apiError(
+            throw DmvicError.apiError<CancellationResponse>(
                 response?.error[0]?.errorText || "Certificate cancellation failed",
                 ERROR_CODES.CANCEL_CERTIFICATE,
                 {
                     dmvicErrorCode: response?.error[0]?.errorCode || dmvicCode,
                     originalError: response.error[0],
+                    response: response,
                 },
             );
         }
@@ -717,12 +720,13 @@ export class DmvicClient implements IDmvicClient {
         // Handle DMVIC API errors
         if (!response.success && response.error && response.error.length > 0) {
             const dmvicCode = this.parseDmvicError(response?.error[0]?.errorText || "");
-            throw DmvicError.apiError(
+            throw DmvicError.apiError<InsuranceValidationResponse>(
                 response?.error[0]?.errorText || "Insurance validation failed",
                 ERROR_CODES.VALIDATE_INSURANCE,
                 {
                     dmvicErrorCode: response?.error[0]?.errorCode || dmvicCode,
                     originalError: response.error[0],
+                    response: response,
                 },
             );
         }
@@ -757,12 +761,13 @@ export class DmvicClient implements IDmvicClient {
         // Handle DMVIC API errors
         if (!response.success && response.error && response.error.length > 0) {
             const dmvicCode = this.parseDmvicError(response?.error[0]?.errorText || "");
-            throw DmvicError.apiError(
+            throw DmvicError.apiError<DoubleInsuranceResponse>(
                 response?.error[0]?.errorText || "Double insurance validation failed",
                 ERROR_CODES.VALIDATE_DOUBLE_INSURANCE,
                 {
                     dmvicErrorCode: response?.error[0]?.errorCode || dmvicCode,
                     originalError: response.error[0],
+                    response: response,
                 },
             );
         }
@@ -803,6 +808,7 @@ export class DmvicClient implements IDmvicClient {
                 {
                     dmvicErrorCode: response?.Error[0]?.errorCode || dmvicCode,
                     originalError: response.Error[0],
+                    response: response,
                 },
             );
         }
@@ -837,12 +843,13 @@ export class DmvicClient implements IDmvicClient {
         // Handle DMVIC API errors - note: InsuranceResponse uses uppercase Error
         if (!response.success && response.Error && response.Error.length > 0) {
             const dmvicCode = this.parseDmvicError(response?.Error[0]?.errorText || "");
-            throw DmvicError.apiError(
+            throw DmvicError.apiError<InsuranceResponse>(
                 response?.Error[0]?.errorText || "Type B certificate issuance failed",
                 ERROR_CODES.ISSUANCE_TYPE_B,
                 {
                     dmvicErrorCode: response?.Error[0]?.errorCode || dmvicCode,
                     originalError: response.Error[0],
+                    response: response,
                 },
             );
         }
@@ -877,12 +884,13 @@ export class DmvicClient implements IDmvicClient {
         // Handle DMVIC API errors - note: InsuranceResponse uses uppercase Error
         if (!response.success && response.Error && response.Error.length > 0) {
             const dmvicCode = this.parseDmvicError(response?.Error[0]?.errorText || "");
-            throw DmvicError.apiError(
+            throw DmvicError.apiError<InsuranceResponse>(
                 response?.Error[0]?.errorText || "Type C certificate issuance failed",
                 ERROR_CODES.ISSUANCE_TYPE_C,
                 {
                     dmvicErrorCode: response?.Error[0]?.errorCode || dmvicCode,
                     originalError: response.Error[0],
+                    response: response,
                 },
             );
         }
@@ -917,12 +925,13 @@ export class DmvicClient implements IDmvicClient {
         // Handle DMVIC API errors - note: InsuranceResponse uses uppercase Error
         if (!response.success && response.Error && response.Error.length > 0) {
             const dmvicCode = this.parseDmvicError(response?.Error[0]?.errorText || "");
-            throw DmvicError.apiError(
+            throw DmvicError.apiError<InsuranceResponse>(
                 response?.Error[0]?.errorText || "Type D certificate issuance failed",
                 ERROR_CODES.ISSUANCE_TYPE_D,
                 {
                     dmvicErrorCode: response?.Error[0]?.errorCode || dmvicCode,
                     originalError: response.Error[0],
+                    response: response,
                 },
             );
         }
@@ -964,12 +973,13 @@ export class DmvicClient implements IDmvicClient {
         // Handle DMVIC API errors - note: InsuranceResponse uses uppercase Error
         if (!response.success && response.Error && response.Error.length > 0) {
             const dmvicCode = this.parseDmvicError(response?.Error[0]?.errorText || "");
-            throw DmvicError.apiError(
+            throw DmvicError.apiError<InsuranceResponse>(
                 response?.Error[0]?.errorText || "Certificate confirmation failed",
                 ERROR_CODES.CONFIRM_ISSUANCE,
                 {
                     dmvicErrorCode: response?.Error[0]?.errorCode || dmvicCode,
                     originalError: response.Error[0],
+                    response: response,
                 },
             );
         }
@@ -1004,12 +1014,13 @@ export class DmvicClient implements IDmvicClient {
         // Handle DMVIC API errors
         if (!response.success && response.error && response.error.length > 0) {
             const dmvicCode = this.parseDmvicError(response?.error[0]?.errorText || "");
-            throw DmvicError.apiError(
+            throw DmvicError.apiError<StockResponse>(
                 response?.error[0]?.errorText || "Member company stock retrieval failed",
                 ERROR_CODES.MEMBER_COMPANY_STOCK,
                 {
                     dmvicErrorCode: response?.error[0]?.errorCode || dmvicCode,
                     originalError: response.error[0],
+                    response: response,
                 },
             );
         }
