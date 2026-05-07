@@ -341,7 +341,9 @@ export class DmvicClient implements IDmvicClient {
                         } catch (err) {
                             data = {};
                         }
-
+                        if(data.Error && !data.error){
+                            data.error = data.Error;
+                        }
                         this.debugLog('Response received:', data);
                         return data as T;
                     }
@@ -410,6 +412,9 @@ export class DmvicClient implements IDmvicClient {
                         try {
                             const data = responseData ? JSON.parse(responseData) : {};
                             this.debugLog('Response received:', data);
+                            if(data.Error && !data.error){
+                                data.error = data.Error;
+                            }
                             resolve(data as T);
                         } catch (parseErr) {
                             reject(DmvicError.networkError(`Failed to parse response: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`));
