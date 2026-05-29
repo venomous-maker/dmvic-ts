@@ -261,9 +261,52 @@ export class DmvicClient implements IDmvicClient {
     }
 
     /**
-     * Makes HTTP requests using axios with X.509 certificate support
+     * Returns true when a parsed API response body signals an expired / invalid token (ER001).
+     */
+    private isTokenExpiredResponse(data: any): boolean {
+        const errors = data?.Error || data?.error;
+        if (!Array.isArray(errors) || errors.length === 0) return false;
+        return errors.some(
+            (e: any) =>
+                typeof e?.errorText === 'string' &&
+                e.errorText.toLowerCase().includes('token') &&
+                (e.errorText.toLowerCase().includes('expired') ||
+                    e.errorText.toLowerCase().includes('invalid')),
+        );
+    }
+
+    /**
+     * Makes HTTP requests with automatic token-expiry retry.
+     *
+     * If the API returns an ER001 "Token is expired or invalid" response the
+     * cached token is invalidated, a fresh login is performed, and the request
+     * is retried once before propagating any further errors.
      */
     private async makeRequest<T>(
+        endpoint: string,
+        options: {
+            method?: "GET" | "POST" | "PUT" | "DELETE";
+            body?: any;
+            params?: Record<string, any>;
+            headers?: Record<string, string>;
+            requiresAuth?: boolean;
+        } = {},
+    ): Promise<T> {
+        const data = await this._makeRequestCore<T>(endpoint, options);
+
+        if (options.requiresAuth && this.isTokenExpiredResponse(data)) {
+            this.debugLog('Token expired per API response, clearing token and retrying...');
+            this.tokenCache.remove('dmvictoken');
+            return this._makeRequestCore<T>(endpoint, options);
+        }
+
+        return data;
+    }
+
+    /**
+     * Core HTTP request implementation (no token-expiry retry).
+     */
+    private async _makeRequestCore<T>(
         endpoint: string,
         options: {
             method?: "GET" | "POST" | "PUT" | "DELETE";
