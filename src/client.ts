@@ -408,6 +408,15 @@ export class DmvicClient implements IDmvicClient {
                 Object.keys(params).forEach((k) => url.searchParams.append(k, String((params as any)[k])));
             }
 
+            // Precompute the body and set Content-Length so Node does not fall back to
+            // Transfer-Encoding: chunked, which the DMVIC (Azure APIM) gateway rejects with a 500.
+            const bodyString = body !== undefined && body !== null
+                ? (typeof body === 'string' ? body : JSON.stringify(body))
+                : undefined;
+            if (bodyString !== undefined) {
+                headers["Content-Length"] = String(Buffer.byteLength(bodyString));
+            }
+
             const requestOptions: http.RequestOptions = {
                 method,
                 headers,
@@ -505,8 +514,7 @@ export class DmvicClient implements IDmvicClient {
                 });
 
                 // Send body if present
-                if (body) {
-                    const bodyString = typeof body === 'string' ? body : JSON.stringify(body);
+                if (bodyString !== undefined) {
                     if (typeof reqObj.write === 'function') {
                         reqObj.write(bodyString);
                     }
